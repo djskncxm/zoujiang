@@ -1,19 +1,20 @@
 name: Question
-description: Ask a question by domain
+description: 按领域向走江人提问
 body:
   - type: dropdown
     id: domain
     attributes:
-      label: Domain
+      label: 所属领域
       options:
         - VMP
-        - Machine
-        - Risk
+        - 改机
+        - 风控
     validations:
       required: true
   - type: textarea
     id: detail
     attributes:
-      label: Question
+      label: 问题正文
+      placeholder: 你的问题...
     validations:
       required: true
