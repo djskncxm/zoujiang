@@ -1,0 +1,24 @@
+name: 提问
+description: 按领域向走江人提问
+title: "提问"
+labels: []
+body:
+  - type: dropdown
+    id: domain
+    attributes:
+      label: 所属领域
+      description: 这个问题属于哪条江？
+      options:
+        - VMP
+        - 改机
+        - 风控
+    validations:
+      required: true
+  - type: textarea
+    id: question
+    attributes:
+      label: 问题正文
+      description: 把问题写清楚。标题会自动生成，不用管。
+      placeholder: 你的问题...
+    validations:
+      required: true

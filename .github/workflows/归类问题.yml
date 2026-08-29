@@ -1,0 +1,64 @@
+name: 归类问题
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+jobs:
+  label-domain:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 按领域打 label 并生成标题
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.issue.body || "";
+            // Issue Forms 生成的 body 形如 "### 所属领域\n\nVMP\n\n### 问题正文\n\n..."
+            const dm = body.match(/###\s*所属领域\s*\n+\s*([^\n]+)/);
+            const domain = dm ? dm[1].trim() : null;
+
+            const qm = body.match(/###\s*问题正文\s*\n+\s*([\s\S]+)/);
+            let summary = "";
+            if (qm) {
+              summary = qm[1].trim().replace(/\s+/g, " ").slice(0, 20);
+            }
+
+            if (!domain) {
+              console.log("未找到「所属领域」字段，跳过");
+              return;
+            }
+
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const number = context.payload.issue.number;
+
+            // 1) 生成规范标题
+            const newTitle = summary ? `问 ${domain}：${summary}` : `问 ${domain}`;
+            await github.rest.issues.update({
+              owner, repo, issue_number: number, title: newTitle,
+            });
+
+            // 2) 打领域 label（不存在则自动创建）
+            const label = `领域:${domain}`;
+            const colors = { "VMP": "d73a4a", "改机": "0075ca", "风控": "0e8a16" };
+            try {
+              await github.rest.issues.addLabels({
+                owner, repo, issue_number: number, labels: [label],
+              });
+            } catch (e) {
+              if (e.status === 404) {
+                await github.rest.issues.createLabel({
+                  owner, repo, name: label, color: colors[domain] || "a2eeef",
+                });
+                await github.rest.issues.addLabels({
+                  owner, repo, issue_number: number, labels: [label],
+                });
+              } else {
+                throw e;
+              }
+            }
+
+            console.log(`标题 -> ${newTitle}，label -> ${label}`);
