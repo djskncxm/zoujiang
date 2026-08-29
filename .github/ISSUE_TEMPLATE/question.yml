@@ -1,5 +1,6 @@
 name: Question
 description: 按领域向走江人提问
+title: "Question"
 body:
   - type: dropdown
     id: domain
